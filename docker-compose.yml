@@ -1,0 +1,48 @@
+services:
+  mysql-container:
+    image: mysql:latest
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: library
+    ports:
+      - "3306:3306"
+    networks:
+      - mynetwork
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin-container
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    networks:
+      - mynetwork
+    depends_on:
+      - mysql-container
+
+  app:
+    image: spring
+    container_name: springboot_app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-container:3306/library?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+    ports:
+      - "9100:9100"
+    networks:
+      - mynetwork
+    depends_on:
+      - mysql-container
+
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  mysql_data:
